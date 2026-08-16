@@ -1,13 +1,24 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { signOut } from '../utils/auth';
 
 export default function ProfileScreen({ navigation }: any) {
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    } catch (e: any) {
+      console.error('Logout failed', e);
+      Alert.alert('Logout failed', e?.message || 'Unknown error');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <Text style={styles.sub}>User profile and settings.</Text>
       <View style={{ height: 12 }} />
-      <Button title="Log out" onPress={() => navigation.replace('Login')} />
+      <Button title="Log out" onPress={handleLogout} />
     </View>
   );
 }

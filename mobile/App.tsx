@@ -9,6 +9,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import SavedWorkoutsScreen from './src/screens/SavedWorkoutsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="SignUp" component={SignUpScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>

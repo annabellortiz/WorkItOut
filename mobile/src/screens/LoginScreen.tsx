@@ -111,7 +111,7 @@ export default function LoginScreen({ navigation }: Props) {
       <View style={{ height: 12 }} />
       <Button title="Forgot password" onPress={() => Alert.alert('Reset', 'Password reset flow placeholder')} />
       <View style={{ height: 8 }} />
-      <Button title="Sign up" onPress={() => Alert.alert('Sign up', 'Sign up flow placeholder')} />
+      <Button title="Sign up" onPress={() => navigation.navigate('SignUp')} />
 
       <View style={{ height: 16 }} />
       <Button title="Clear saved session" onPress={handleLogoutClear} color="#888" />
