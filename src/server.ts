@@ -17,6 +17,22 @@ const app = express();
 
 app.use(express.json());
 
+// Auth middleware: expects Authorization: Bearer <idToken>
+async function authenticate(req: any, res: any, next: any) {
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) return res.status(401).json({ error: 'missing authorization header' });
+  const idToken = m[1];
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    req.user = { uid: decoded.uid, email: decoded.email };
+    return next();
+  } catch (e) {
+    console.error('verifyIdToken failed', e);
+    return res.status(401).json({ error: 'invalid token' });
+  }
+}
+
 // Create account
 app.post('/user', async (req, res) => {
   try {
@@ -48,6 +64,49 @@ app.get('/user/:id', async (req, res) => {
   try {
     const doc = await db.collection('users').doc(req.params.id).get();
     return res.json(doc.exists ? doc.data() : null);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
+
+// List saved workouts for authenticated user
+app.get('/user/me/workouts', authenticate, async (req: any, res: any) => {
+  try {
+    const uid = req.user.uid;
+    const col = db.collection('users').doc(uid).collection('savedWorkouts');
+    const snaps = await col.orderBy('createdAt', 'desc').get();
+    const results: any[] = [];
+    snaps.forEach((d: any) => results.push({ id: d.id, ...d.data() }));
+    return res.json({ workouts: results });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
+
+// Create saved workout
+app.post('/user/me/workouts', authenticate, async (req: any, res: any) => {
+  try {
+    const uid = req.user.uid;
+    const payload = req.body || {};
+    const data = { ...payload, createdAt: new Date().toISOString() };
+    const docRef = await db.collection('users').doc(uid).collection('savedWorkouts').add(data);
+    const doc = await docRef.get();
+    return res.status(201).json({ id: docRef.id, ...doc.data() });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
+
+// Delete saved workout
+app.delete('/user/me/workouts/:workoutId', authenticate, async (req: any, res: any) => {
+  try {
+    const uid = req.user.uid;
+    const wid = req.params.workoutId;
+    await db.collection('users').doc(uid).collection('savedWorkouts').doc(wid).delete();
+    return res.json({ ok: true });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'internal' });
