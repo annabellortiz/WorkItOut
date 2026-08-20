@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, Alert } from 'react-native';
-import { listWorkouts, createWorkout, deleteWorkout } from '../utils/apiClient';
+import { listWorkouts, deleteWorkout } from '../utils/apiClient';
 
-export default function SavedWorkoutsScreen() {
+export default function SavedWorkoutsScreen({ navigation }: any) {
   const [workouts, setWorkouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -21,16 +21,12 @@ export default function SavedWorkoutsScreen() {
 
   useEffect(() => { load(); }, []);
 
-  async function handleAddSample() {
-    try {
-      const payload = { title: 'Sample Workout', notes: 'Saved from app', createdAt: new Date().toISOString() };
-      const created = await createWorkout(payload);
-      Alert.alert('Saved', 'Workout saved');
-      setWorkouts((s) => [created, ...s]);
-    } catch (e: any) {
-      console.error('createWorkout failed', e);
-      Alert.alert('Save failed', e?.message || String(e));
-    }
+  function handleCreate() {
+    navigation.navigate('WorkoutEditor');
+  }
+
+  function handleEdit(item: any) {
+    navigation.navigate('WorkoutEditor', { workout: item });
   }
 
   async function handleDelete(id: string) {
@@ -48,11 +44,7 @@ export default function SavedWorkoutsScreen() {
       <Text style={styles.title}>Saved Workouts</Text>
 
       <View style={{ marginBottom: 12 }}>
-        <Button title="Refresh" onPress={load} disabled={loading} />
-      </View>
-
-      <View style={{ marginBottom: 12 }}>
-        <Button title="Add sample workout" onPress={handleAddSample} />
+        <Button title="Create workout" onPress={handleCreate} />
       </View>
 
       <FlatList
@@ -65,6 +57,8 @@ export default function SavedWorkoutsScreen() {
               <Text style={styles.itemSub}>{item.notes || ''}</Text>
             </View>
             <View style={{ marginLeft: 12 }}>
+              <Button title="Edit" onPress={() => handleEdit(item)} />
+              <View style={{ height: 8 }} />
               <Button title="Delete" color="#d33" onPress={() => handleDelete(item.id)} />
             </View>
           </View>

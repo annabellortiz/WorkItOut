@@ -33,6 +33,7 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+          <Stack.Screen name="WorkoutEditor" component={require('./src/screens/WorkoutEditorScreen').default} options={{ title: 'Workout' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

@@ -100,6 +100,22 @@ app.post('/user/me/workouts', authenticate, async (req: any, res: any) => {
   }
 });
 
+// Update saved workout (partial replace)
+app.put('/user/me/workouts/:workoutId', authenticate, async (req: any, res: any) => {
+  try {
+    const uid = req.user.uid;
+    const wid = req.params.workoutId;
+    const payload = req.body || {};
+    const docRef = db.collection('users').doc(uid).collection('savedWorkouts').doc(wid);
+    await docRef.set({ ...payload, updatedAt: new Date().toISOString() }, { merge: true });
+    const doc = await docRef.get();
+    return res.json({ id: docRef.id, ...doc.data() });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
+
 // Delete saved workout
 app.delete('/user/me/workouts/:workoutId', authenticate, async (req: any, res: any) => {
   try {

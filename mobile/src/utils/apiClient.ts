@@ -23,6 +23,10 @@ export async function createWorkout(payload: any) {
   return authFetch('/user/me/workouts', { method: 'POST', body: JSON.stringify(payload) });
 }
 
+export async function updateWorkout(id: string, payload: any) {
+  return authFetch(`/user/me/workouts/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
 export async function deleteWorkout(id: string) {
   return authFetch(`/user/me/workouts/${id}`, { method: 'DELETE' });
 }
