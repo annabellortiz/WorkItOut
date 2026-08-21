@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, Alert } from 'react-native';
-import { listWorkouts, deleteWorkout } from '../utils/apiClient';
+import { useFocusEffect } from '@react-navigation/native';
+import { listWorkouts } from '../utils/apiClient';
 
 export default function SavedWorkoutsScreen({ navigation }: any) {
   const [workouts, setWorkouts] = useState<any[]>([]);
@@ -19,24 +20,18 @@ export default function SavedWorkoutsScreen({ navigation }: any) {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      load();
+    }, [])
+  );
 
   function handleCreate() {
     navigation.navigate('WorkoutEditor');
   }
 
-  function handleEdit(item: any) {
-    navigation.navigate('WorkoutEditor', { workout: item });
-  }
-
-  async function handleDelete(id: string) {
-    try {
-      await deleteWorkout(id);
-      setWorkouts((s) => s.filter((w) => w.id !== id));
-    } catch (e: any) {
-      console.error('deleteWorkout failed', e);
-      Alert.alert('Delete failed', e?.message || String(e));
-    }
+  function handleView(item: any) {
+    navigation.navigate('WorkoutDetail', { workout: item });
   }
 
   return (
@@ -56,14 +51,16 @@ export default function SavedWorkoutsScreen({ navigation }: any) {
               <Text style={styles.itemTitle}>{item.title || '(untitled)'}</Text>
               <Text style={styles.itemSub}>{item.notes || ''}</Text>
             </View>
-            <View style={{ marginLeft: 12 }}>
-              <Button title="Edit" onPress={() => handleEdit(item)} />
-              <View style={{ height: 8 }} />
-              <Button title="Delete" color="#d33" onPress={() => handleDelete(item.id)} />
-            </View>
+            <Button title="View" onPress={() => handleView(item)} />
           </View>
         )}
-        ListEmptyComponent={() => <Text style={{ color: '#666' }}>{loading ? 'Loading...' : 'No saved workouts'}</Text>}
+        ListEmptyComponent={() => (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <Text style={{ color: '#999', fontSize: 16 }}>
+              {loading ? 'Loading...' : 'No workouts saved yet'}
+            </Text>
+          </View>
+        )}
       />
     </View>
   );

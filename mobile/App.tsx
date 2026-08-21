@@ -8,6 +8,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import SavedWorkoutsScreen from './src/screens/SavedWorkoutsScreenNew';
+import WorkoutDetailScreen from './src/screens/WorkoutDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 
@@ -34,6 +35,7 @@ export default function App() {
           <Stack.Screen name="SignUp" component={SignUpScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
           <Stack.Screen name="WorkoutEditor" component={require('./src/screens/WorkoutEditorScreen').default} options={{ title: 'Workout' }} />
+          <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} options={{ title: 'Workout Details' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

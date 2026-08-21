@@ -156,15 +156,21 @@ export async function getValidIdToken(): Promise<string | null> {
   const expiresAt = expiresAtStr ? parseInt(expiresAtStr, 10) : 0;
   const now = Date.now();
 
+  console.log('getValidIdToken: idToken exists?', !!idToken, 'expiresAt:', expiresAt, 'now:', now, 'expired?', expiresAt - EXPIRY_BUFFER_MS <= now);
+
   if (idToken && expiresAt && expiresAt - EXPIRY_BUFFER_MS > now) {
+    console.log('Using cached idToken');
     return idToken;
   }
 
   // Try refresh if possible
   try {
+    console.log('Attempting to refresh token...');
     const newToken = await refreshIdToken();
+    console.log('Token refreshed successfully');
     return newToken;
-  } catch (e) {
+  } catch (e: any) {
+    console.error('Token refresh failed:', e?.message || e);
     // Clear tokens if refresh failed
     await clearTokens();
     return null;

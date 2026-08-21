@@ -1,35 +1,41 @@
 import express from 'express';
-const _adminModule: any = require('firebase-admin');
-const admin: any = _adminModule && _adminModule.default ? _adminModule.default : _adminModule;
-const serviceAccount: any = require('../serviceAccountKey.json');
+import * as fs from 'fs';
+import * as path from 'path';
 
-const credential = (admin.credential && typeof admin.credential.cert === 'function')
-  ? admin.credential.cert(serviceAccount)
-  : admin.cert(serviceAccount);
+const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
+
+const serviceAccountPath = path.join(__dirname, '../serviceAccountKey.json');
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
 admin.initializeApp({
-  credential,
+  credential: admin.cert(serviceAccount),
+  projectId: serviceAccount.project_id,
 });
 
-const { getFirestore } = require('firebase-admin/firestore');
 const db = getFirestore();
+const auth = getAuth();
 const app = express();
 
 app.use(express.json());
 
 // Auth middleware: expects Authorization: Bearer <idToken>
 async function authenticate(req: any, res: any, next: any) {
-  const auth = req.headers.authorization || '';
-  const m = auth.match(/^Bearer\s+(.+)$/i);
-  if (!m) return res.status(401).json({ error: 'missing authorization header' });
-  const idToken = m[1];
+  const authHeader = req.headers.authorization || '';
+  console.log('Auth header received:', authHeader.substring(0, 30) + '...');
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match) return res.status(401).json({ error: 'missing authorization header' });
+  
+  const idToken = match[1];
   try {
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    const decoded = await auth.verifyIdToken(idToken);
     req.user = { uid: decoded.uid, email: decoded.email };
+    console.log('Token verified for user:', decoded.uid);
     return next();
-  } catch (e) {
-    console.error('verifyIdToken failed', e);
-    return res.status(401).json({ error: 'invalid token' });
+  } catch (e: any) {
+    console.error('verifyIdToken failed:', e?.message || e);
+    return res.status(401).json({ error: 'invalid token', message: e?.message });
   }
 }
 

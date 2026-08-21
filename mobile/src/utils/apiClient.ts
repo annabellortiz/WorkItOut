@@ -6,9 +6,11 @@ export const API_BASE = process.env.API_BASE || DEFAULT_BASE;
 async function authFetch(path: string, opts: RequestInit = {}) {
   const token = await getValidIdToken();
   if (!token) throw new Error('No id token available');
+  console.log('authFetch:', opts.method, path, 'token:', token.substring(0, 30) + '...');
   const headers = Object.assign({}, opts.headers || {}, { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
   const res = await fetch(`${API_BASE.replace(/\/$/, '')}${path.startsWith('/') ? path : '/' + path}`, { ...opts, headers });
   const text = await res.text();
+  console.log('authFetch response:', res.status, text.substring(0, 100));
   let data: any;
   try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
   if (!res.ok) throw new Error(data?.error || data?.message || JSON.stringify(data));
